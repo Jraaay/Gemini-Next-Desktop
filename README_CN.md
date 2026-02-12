@@ -1,7 +1,7 @@
 # GeminiNext
 
 <div align="center">
-  <img src="logo.svg" alt="GeminiNext Logo" width="120" height="120">
+  <img src="resources/logo.svg" alt="GeminiNext Logo" width="120" height="120">
 
   <h3>更轻快、更纯净、更懂 macOS 的 Gemini 非官方桌面客户端</h3>
   
@@ -18,6 +18,12 @@
     <a href="./README.md">English</a>
   </p>
 </div>
+
+## 📸 界面预览
+
+|                           主界面                           |                            设置界面                             |
+| :--------------------------------------------------------: | :-------------------------------------------------------------: |
+| <img src="resources/Main_CN.png" width="600" alt="主界面"> | <img src="resources/Setting_CN.png" width="600" alt="设置界面"> |
 
 ## 💡 为什么选择 GeminiNext？
 

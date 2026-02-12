@@ -1,7 +1,7 @@
 # GeminiNext
 
 <div align="center">
-  <img src="logo.svg" alt="GeminiNext Logo" width="120" height="120">
+  <img src="resources/logo.svg" alt="GeminiNext Logo" width="120" height="120">
 
   <h3>A lighter, cleaner, and more macOS-native unofficial Gemini desktop client</h3>
   
@@ -18,6 +18,12 @@
     <strong>English</strong>
   </p>
 </div>
+
+## 📸 Screenshots
+
+|                           Main Interface                           |                            Settings                             |
+| :----------------------------------------------------------------: | :-------------------------------------------------------------: |
+| <img src="resources/Main_EN.png" width="600" alt="Main Interface"> | <img src="resources/Setting_EN.png" width="600" alt="Settings"> |
 
 ## 💡 Why GeminiNext?
 
