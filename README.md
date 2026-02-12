@@ -6,7 +6,7 @@
   <h3>A lighter, cleaner, and more macOS-native unofficial Gemini desktop client</h3>
   
   <p>
-    <img src="https://img.shields.io/badge/Platform-macOS%2014.6%2B-blue?logo=apple&style=flat-square" alt="Platform">
+    <img src="https://img.shields.io/badge/Platform-macOS%2014.0%2B-blue?logo=apple&style=flat-square" alt="Platform">
     <img src="https://img.shields.io/badge/Language-Swift-orange?logo=swift&style=flat-square" alt="Language"> <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License">
     <a href="https://github.com/Jraaay/GeminiNext/releases">
       <img src="https://img.shields.io/github/v/release/Jraaay/GeminiNext?style=flat-square" alt="Release">
@@ -70,7 +70,7 @@ Head to [Releases](https://github.com/Jraaay/GeminiNext/releases) and download t
 
 ### Option 2: Build from Source
 
-To compile from source, make sure your environment meets: **macOS 14.6+** with **Xcode 16.0+** installed.
+To compile from source, make sure your environment meets: **macOS 14.0+** with **Xcode 16.0+** installed.
 
 ```bash
 git clone https://github.com/Jraaay/GeminiNext.git
