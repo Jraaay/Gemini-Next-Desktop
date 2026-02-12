@@ -72,6 +72,16 @@
         }
       }
     },
+    "Auto Check for Updates" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动检查更新"
+          }
+        }
+      }
+    },
     "Background Timeout" : {
       "localizations" : {
         "zh-Hans" : {

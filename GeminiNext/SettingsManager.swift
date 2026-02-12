@@ -109,6 +109,7 @@ class SettingsManager: ObservableObject {
         static let launchAtLogin = false
         static let alwaysOnTop = false
         static let hotKeyPreset = HotKeyPreset.ctrlGrave
+        static let autoCheckForUpdates = true
     }
 
     // MARK: - Storage Keys
@@ -120,6 +121,7 @@ class SettingsManager: ObservableObject {
         static let alwaysOnTop = "alwaysOnTop"
         static let hotKeyPreset = "hotKeyPreset"
         static let language = "appLanguage"
+        static let autoCheckForUpdates = "autoCheckForUpdates"
     }
 
     // MARK: - Configurable Properties
@@ -166,6 +168,13 @@ class SettingsManager: ObservableObject {
         }
     }
 
+    /// 是否在启动时自动检查更新
+    @Published var autoCheckForUpdates: Bool {
+        didSet {
+            UserDefaults.standard.set(autoCheckForUpdates, forKey: Keys.autoCheckForUpdates)
+        }
+    }
+
     // MARK: - Computed Properties
 
 
@@ -204,6 +213,13 @@ class SettingsManager: ObservableObject {
             self.language = lang
         } else {
             self.language = .system
+        }
+
+        // 读取自动检查更新设置（默认开启）
+        if defaults.object(forKey: Keys.autoCheckForUpdates) != nil {
+            self.autoCheckForUpdates = defaults.bool(forKey: Keys.autoCheckForUpdates)
+        } else {
+            self.autoCheckForUpdates = Defaults.autoCheckForUpdates
         }
     }
 

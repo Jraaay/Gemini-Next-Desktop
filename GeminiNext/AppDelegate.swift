@@ -10,8 +10,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             self.configureMainWindow()
             // Restore window always-on-top state
             SettingsManager.shared.updateWindowLevel()
-            // Check for updates silently at launch
-            UpdateChecker.shared.checkForUpdate(silent: true)
+            // 仅在用户未关闭自动更新时静默检查
+            if SettingsManager.shared.autoCheckForUpdates {
+                UpdateChecker.shared.checkForUpdate(silent: true)
+            }
         }
     }
 

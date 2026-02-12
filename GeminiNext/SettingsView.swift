@@ -47,6 +47,8 @@ struct SettingsView: View {
                         .font(.caption)
                         .foregroundStyle(.orange)
                 }
+
+                Toggle("Auto Check for Updates", isOn: $settings.autoCheckForUpdates)
             }
 
             // MARK: - Advanced Settings
