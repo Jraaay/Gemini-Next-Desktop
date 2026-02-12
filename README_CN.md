@@ -21,9 +21,13 @@
 
 ## 📸 界面预览
 
-|                           主界面                           |                            设置界面                             |
-| :--------------------------------------------------------: | :-------------------------------------------------------------: |
-| <img src="resources/Main_CN.png" width="600" alt="主界面"> | <img src="resources/Setting_CN.png" width="600" alt="设置界面"> |
+<div align="center">
+  <p><strong>主界面</strong></p>
+  <img src="resources/Main_CN.png" width="600" alt="主界面">
+  <br><br>
+  <p><strong>设置界面</strong></p>
+  <img src="resources/Setting_CN.png" width="600" alt="设置界面">
+</div>
 
 ## 💡 为什么选择 GeminiNext？
 

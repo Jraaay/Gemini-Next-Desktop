@@ -21,9 +21,13 @@
 
 ## 📸 Screenshots
 
-|                           Main Interface                           |                            Settings                             |
-| :----------------------------------------------------------------: | :-------------------------------------------------------------: |
-| <img src="resources/Main_EN.png" width="600" alt="Main Interface"> | <img src="resources/Setting_EN.png" width="600" alt="Settings"> |
+<div align="center">
+  <p><strong>Main Interface</strong></p>
+  <img src="resources/Main_EN.png" width="600" alt="Main Interface">
+  <br><br>
+  <p><strong>Settings</strong></p>
+  <img src="resources/Setting_EN.png" width="600" alt="Settings">
+</div>
 
 ## 💡 Why GeminiNext?
 
