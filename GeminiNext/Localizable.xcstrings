@@ -322,6 +322,16 @@
         }
       }
     },
+    "Receive Beta Updates" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接收 Beta 版本更新"
+          }
+        }
+      }
+    },
     "Record" : {
       "localizations" : {
         "zh-Hans" : {

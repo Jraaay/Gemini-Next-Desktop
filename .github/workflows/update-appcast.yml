@@ -1,9 +1,9 @@
 name: Update Appcast
 
-# Only triggered when a Release is officially published (not on drafts)
+# Triggered when a Release is published or edited (e.g. pre-release → release)
 on:
   release:
-    types: [published]
+    types: [published, edited]
 
 permissions:
   contents: write
@@ -84,6 +84,23 @@ jobs:
             --ed-key-file <(echo "$SPARKLE_PRIVATE_KEY")
 
           echo "Generated appcast.xml:"
+          cat gh-pages-content/appcast.xml
+
+      - name: Inject beta channel for pre-release
+        if: ${{ github.event.release.prerelease }}
+        run: |
+          # Extract version number from release tag
+          VERSION="${GITHUB_EVENT_RELEASE_TAG_NAME:-${{ github.event.release.tag_name }}}"
+          VERSION="${VERSION#v}"
+          echo "Pre-release detected, injecting beta channel for version $VERSION"
+
+          # Inject <sparkle:channel>beta</sparkle:channel> into the <item> matching this version
+          # Insert channel tag after <sparkle:shortVersionString>
+          sed -i '' "/<sparkle:shortVersionString>${VERSION}<\/sparkle:shortVersionString>/a\\
+            <sparkle:channel>beta</sparkle:channel>
+          " gh-pages-content/appcast.xml
+
+          echo "Updated appcast.xml with beta channel:"
           cat gh-pages-content/appcast.xml
 
       - name: Push appcast to gh-pages

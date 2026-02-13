@@ -195,6 +195,7 @@ class SettingsManager: ObservableObject {
         static let customHotKey: CustomHotKey? = CustomHotKey.defaultHotKey
         static let newChatHotKey: CustomHotKey? = CustomHotKey.newChatDefaultHotKey
         static let windowAnimation = true
+        static let betaChannel = false
     }
 
     // MARK: - Storage Keys
@@ -209,6 +210,7 @@ class SettingsManager: ObservableObject {
         static let legacyHotKeyPreset = "hotKeyPreset"
         static let language = "appLanguage"
         static let windowAnimation = "windowAnimation"
+        static let betaChannel = "betaChannel"
     }
 
     // MARK: - Configurable Properties
@@ -279,6 +281,11 @@ class SettingsManager: ObservableObject {
     /// Toggle for window show/hide transition animation
     @Published var windowAnimation: Bool {
         didSet { UserDefaults.standard.set(windowAnimation, forKey: Keys.windowAnimation) }
+    }
+
+    /// Whether to receive beta channel updates
+    @Published var betaChannel: Bool {
+        didSet { UserDefaults.standard.set(betaChannel, forKey: Keys.betaChannel) }
     }
 
 
@@ -355,6 +362,13 @@ class SettingsManager: ObservableObject {
             self.windowAnimation = defaults.bool(forKey: Keys.windowAnimation)
         } else {
             self.windowAnimation = Defaults.windowAnimation
+        }
+
+        // betaChannel defaults to false; only read if user has explicitly set it
+        if defaults.object(forKey: Keys.betaChannel) != nil {
+            self.betaChannel = defaults.bool(forKey: Keys.betaChannel)
+        } else {
+            self.betaChannel = Defaults.betaChannel
         }
     }
 

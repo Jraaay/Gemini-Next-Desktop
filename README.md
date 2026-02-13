@@ -65,6 +65,7 @@ Unlike bloated Electron-based apps, GeminiNext is built entirely with native Swi
 
 - **Sparkle Integration** — Built-in automatic update checking via the Sparkle framework.
 - **Update Toggle** — Option to disable automatic update checks.
+- **Beta Channel** — Opt-in to receive beta updates and preview new features early.
 
 ### 🛠️ Advanced Customization
 
@@ -107,18 +108,19 @@ Select your target device in Xcode, then press `Cmd + R` to build and run.
 
 ## ⚙️ Settings
 
-| Option              | Description                      | Default                                          |
-| ------------------- | -------------------------------- | ------------------------------------------------ |
-| Background Timeout  | Start a new chat after timeout   | 10 min                                           |
-| Launch at Login     | Auto-start on login              | Off                                              |
-| Always on Top       | Keep window in front             | Off                                              |
-| Window Animation    | Fade transition on show/hide     | On                                               |
-| Show/Hide Window    | Toggle window shortcut           | <kbd>Ctrl</kbd> + <kbd>`</kbd>                   |
-| New Chat            | New chat shortcut                | <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>N</kbd> |
-| Language            | UI display language              | System                                           |
-| User-Agent          | Custom browser identity          | Safari UA                                        |
-| Clear Browsing Data | Clear cookies, cache and storage | —                                                |
-| Auto Update Check   | Check for updates automatically  | On                                               |
+| Option               | Description                      | Default                                          |
+| -------------------- | -------------------------------- | ------------------------------------------------ |
+| Background Timeout   | Start a new chat after timeout   | 10 min                                           |
+| Launch at Login      | Auto-start on login              | Off                                              |
+| Always on Top        | Keep window in front             | Off                                              |
+| Window Animation     | Fade transition on show/hide     | On                                               |
+| Show/Hide Window     | Toggle window shortcut           | <kbd>Ctrl</kbd> + <kbd>`</kbd>                   |
+| New Chat             | New chat shortcut                | <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>N</kbd> |
+| Language             | UI display language              | System                                           |
+| User-Agent           | Custom browser identity          | Safari UA                                        |
+| Clear Browsing Data  | Clear cookies, cache and storage | —                                                |
+| Auto Update Check    | Check for updates automatically  | On                                               |
+| Receive Beta Updates | Receive beta channel updates     | Off                                              |
 
 ## 🛠️ Tech Stack
 

@@ -65,6 +65,7 @@
 
 - Sparkle 集成 — 内置基于 Sparkle 框架的自动更新检查。
 - 更新开关 — 可选择关闭自动更新检查。
+- Beta 渠道 — 支持接收 Beta 版本更新，提前体验新功能。
 
 ### 🛠️ 高级定制
 
@@ -119,6 +120,7 @@ open GeminiNext.xcodeproj
 | User-Agent     | 自定义浏览器标识          | Safari UA                                        |
 | 清除浏览数据   | 清除 Cookies、缓存和存储  | —                                                |
 | 自动检查更新   | 自动检查应用更新          | 开启                                             |
+| 接收 Beta 更新 | 接收 Beta 渠道版本更新    | 关闭                                             |
 
 ## 🛠️ 技术栈
 

@@ -1,11 +1,16 @@
 import SwiftUI
 import Sparkle
 
-class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
-    /// Sparkle updater controller, initialized at app launch
-    let updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, SPUUpdaterDelegate {
+    /// Sparkle updater controller, using lazy var to pass self as updaterDelegate
+    lazy var updaterController: SPUStandardUpdaterController = {
+        SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: self, userDriverDelegate: nil)
+    }()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Trigger lazy initialization to ensure Sparkle starts
+        _ = updaterController
+
         // Register global hotkeys
         HotKeyManager.shared.register()
 
@@ -27,6 +32,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             }
             return true
         }
+    }
+
+    // MARK: - SPUUpdaterDelegate
+
+    /// Return allowed update channels based on user preference
+    func allowedChannels(for updater: SPUUpdater) -> Set<String> {
+        if SettingsManager.shared.betaChannel {
+            return Set(["beta"])
+        }
+        return Set()
     }
 
     // MARK: - NSWindowDelegate

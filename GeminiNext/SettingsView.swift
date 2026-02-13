@@ -205,6 +205,8 @@ struct SettingsView: View {
                         .foregroundStyle(.secondary)
                 }
 
+                Toggle("Receive Beta Updates", isOn: $settings.betaChannel)
+
                 HStack {
                     Text("Check for Updates")
                     Spacer()
