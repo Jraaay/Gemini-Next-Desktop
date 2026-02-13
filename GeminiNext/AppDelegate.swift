@@ -31,9 +31,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     // MARK: - NSWindowDelegate
 
-    /// Intercept window close event: hide the app instead to prevent WebView from being destroyed
+    /// Intercept window close event: hide the app instead of destroying it to preserve WebView lifecycle
     func windowShouldClose(_ sender: NSWindow) -> Bool {
-        NSApp.hide(nil)
+        if SettingsManager.shared.windowAnimation {
+            // Perform fade-out animation then hide
+            NSAnimationContext.runAnimationGroup({ context in
+                context.duration = 0.15
+                context.timingFunction = CAMediaTimingFunction(name: .easeIn)
+                sender.animator().alphaValue = 0
+            }, completionHandler: {
+                NSApp.hide(nil)
+                // Restore alphaValue for the next show
+                sender.alphaValue = 1.0
+            })
+        } else {
+            NSApp.hide(nil)
+        }
         return false
     }
 

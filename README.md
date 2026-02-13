@@ -19,6 +19,12 @@
   </p>
 </div>
 
+## 🎬 Demo
+
+<div align="center">
+  <img src="resources/demo.gif" width="600" alt="Demo">
+</div>
+
 ## 📸 Screenshots
 
 <div align="center">
@@ -52,6 +58,12 @@ Unlike bloated Electron-based apps, GeminiNext is built entirely with native Swi
 - **Always on Top** — Pin the window above all others.
 - **Timeout Reset** — Automatically starts a new conversation after prolonged inactivity.
 - **Auto Focus** — Input field is focused whenever the window is activated.
+- **Window Animation** — Smooth fade-in/fade-out transitions when showing/hiding the window.
+
+### 🔄 Auto Updates
+
+- **Sparkle Integration** — Built-in automatic update checking via the Sparkle framework.
+- **Update Toggle** — Option to disable automatic update checks.
 
 ### 🛠️ Advanced Customization
 
@@ -92,20 +104,23 @@ Select your target device in Xcode, then press `Cmd + R` to build and run.
 
 ## ⚙️ Settings
 
-| Option             | Description                    | Default                        |
-| ------------------ | ------------------------------ | ------------------------------ |
-| Background Timeout | Start a new chat after timeout | 10 min                         |
-| Launch at Login    | Auto-start on login            | Off                            |
-| Always on Top      | Keep window in front           | Off                            |
-| Global Hotkey      | Toggle window shortcut         | <kbd>Ctrl</kbd> + <kbd>`</kbd> |
-| Language           | UI display language            | System                         |
-| User-Agent         | Custom browser identity        | Safari UA                      |
+| Option             | Description                     | Default                        |
+| ------------------ | ------------------------------- | ------------------------------ |
+| Background Timeout | Start a new chat after timeout  | 10 min                         |
+| Launch at Login    | Auto-start on login             | Off                            |
+| Always on Top      | Keep window in front            | Off                            |
+| Window Animation   | Fade transition on show/hide    | On                             |
+| Global Hotkey      | Toggle window shortcut          | <kbd>Ctrl</kbd> + <kbd>`</kbd> |
+| Language           | UI display language             | System                         |
+| User-Agent         | Custom browser identity         | Safari UA                      |
+| Auto Update Check  | Check for updates automatically | On                             |
 
 ## 🛠️ Tech Stack
 
 * **SwiftUI** — Modern declarative UI framework
 * **WKWebView** — High-performance web rendering engine
 * **Carbon Events** — Low-level global hotkey registration
+* **Sparkle** — Mature open-source framework for macOS app updates
 * **String Catalog** — Apple's recommended localization solution
 
 ## 📄 License

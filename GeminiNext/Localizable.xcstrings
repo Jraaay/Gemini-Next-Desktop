@@ -319,6 +319,16 @@
         }
       }
     },
+    "Window Animation" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "窗口过渡动画"
+          }
+        }
+      }
+    },
 
   },
   "version" : "1.0"

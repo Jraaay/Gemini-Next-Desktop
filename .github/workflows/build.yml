@@ -57,7 +57,7 @@ jobs:
           echo "Architectures:"
           lipo -info "$APP_PATH/Contents/MacOS/GeminiNext"
 
-          # 重新签名整个 app bundle（包括嵌入的 Sparkle.framework），确保 Team ID 一致
+          # Re-sign the entire app bundle (including embedded Sparkle.framework) to ensure consistent Team ID
           codesign --deep --force --sign - "$APP_PATH"
           echo "Code signature verified:"
           codesign -dvvv "$APP_PATH"

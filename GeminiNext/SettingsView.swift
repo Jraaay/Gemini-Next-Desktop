@@ -66,6 +66,8 @@ struct SettingsView: View {
 
                 Toggle("Always on Top", isOn: $settings.alwaysOnTop)
 
+                Toggle("Window Animation", isOn: $settings.windowAnimation)
+
                 Picker("Global Hotkey", selection: $settings.hotKeyPreset) {
                     ForEach(HotKeyPreset.allCases) { preset in
                         Text(preset.displayName).tag(preset)

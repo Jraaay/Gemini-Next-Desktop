@@ -1,7 +1,7 @@
 import Cocoa
 import Carbon
 
-/// Global hotkey callback function, satisfies @convention(c) requirement
+/// Global hotkey callback function conforming to @convention(c)
 private func hotKeyHandler(nextHandler: EventHandlerCallRef?, event: EventRef?, userData: UnsafeMutableRawPointer?) -> OSStatus {
     DispatchQueue.main.async {
         HotKeyManager.shared.onHotKeyPressed()
@@ -14,10 +14,15 @@ class HotKeyManager {
     private var hotKeyRef: EventHotKeyRef?
     /// Event handler only needs to be installed once
     private var handlerInstalled = false
+    /// Prevent repeated triggers during animation
+    private var isAnimating = false
+
+    /// Animation duration (seconds), no more than 200ms
+    private let animationDuration: TimeInterval = 0.15
     
     private init() {}
     
-    /// Register hotkey on first launch (called at app startup)
+    /// Register hotkey on initial launch
     func register() {
         installHandlerIfNeeded()
         registerCurrentPreset()
@@ -75,23 +80,73 @@ class HotKeyManager {
     }
     
     func onHotKeyPressed() {
+        // If animation is in progress, ignore this trigger
+        guard !isAnimating else { return }
+
         // Check if there are any visible windows
         let hasVisibleWindow = NSApp.windows.contains { $0.isVisible } && NSApp.isActive
 
         if hasVisibleWindow {
-            // If the app is in the foreground with visible windows, hide it
-            NSApp.hide(nil)
+            // App is in the foreground with visible windows → hide
+            hideWithAnimation()
         } else {
-            // Otherwise (app in background, or foreground but window not visible), activate and show
-            NSApp.activate(ignoringOtherApps: true)
+            // Otherwise (background / window not visible) → activate and show
+            showWithAnimation()
+        }
+    }
 
-            // Only activate the main window (delegate is AppDelegate), skip settings windows etc.
-            for window in NSApp.windows where window.delegate is AppDelegate {
-                window.makeKeyAndOrderFront(nil)
-                window.orderFrontRegardless()
-                // Ensure opacity is normal (prevent animation artifacts)
+    // MARK: - Animation Methods
+
+    /// Show window with fade-in animation
+    private func showWithAnimation() {
+        let useAnimation = SettingsManager.shared.windowAnimation
+
+        NSApp.activate(ignoringOtherApps: true)
+
+        for window in NSApp.windows where window.delegate is AppDelegate {
+            if useAnimation {
+                // Set fully transparent first, then fade in
+                window.alphaValue = 0
+            }
+            window.makeKeyAndOrderFront(nil)
+            window.orderFrontRegardless()
+
+            if useAnimation {
+                isAnimating = true
+                NSAnimationContext.runAnimationGroup({ context in
+                    context.duration = animationDuration
+                    context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+                    window.animator().alphaValue = 1.0
+                }, completionHandler: { [weak self] in
+                    self?.isAnimating = false
+                })
+            } else {
                 window.alphaValue = 1.0
             }
+        }
+    }
+
+    /// Hide window with fade-out animation
+    private func hideWithAnimation() {
+        let useAnimation = SettingsManager.shared.windowAnimation
+
+        if useAnimation {
+            isAnimating = true
+            // Perform fade-out animation on all main windows
+            for window in NSApp.windows where window.delegate is AppDelegate {
+                NSAnimationContext.runAnimationGroup({ context in
+                    context.duration = animationDuration
+                    context.timingFunction = CAMediaTimingFunction(name: .easeIn)
+                    window.animator().alphaValue = 0
+                }, completionHandler: { [weak self] in
+                    NSApp.hide(nil)
+                    // Restore alphaValue for the next show
+                    window.alphaValue = 1.0
+                    self?.isAnimating = false
+                })
+            }
+        } else {
+            NSApp.hide(nil)
         }
     }
 }

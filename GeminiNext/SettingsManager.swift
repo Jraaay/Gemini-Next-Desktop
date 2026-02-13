@@ -109,6 +109,7 @@ class SettingsManager: ObservableObject {
         static let launchAtLogin = false
         static let alwaysOnTop = false
         static let hotKeyPreset = HotKeyPreset.ctrlGrave
+        static let windowAnimation = true
     }
 
     // MARK: - Storage Keys
@@ -120,6 +121,7 @@ class SettingsManager: ObservableObject {
         static let alwaysOnTop = "alwaysOnTop"
         static let hotKeyPreset = "hotKeyPreset"
         static let language = "appLanguage"
+        static let windowAnimation = "windowAnimation"
     }
 
     // MARK: - Configurable Properties
@@ -166,6 +168,11 @@ class SettingsManager: ObservableObject {
         }
     }
 
+    /// Toggle for window show/hide transition animation
+    @Published var windowAnimation: Bool {
+        didSet { UserDefaults.standard.set(windowAnimation, forKey: Keys.windowAnimation) }
+    }
+
 
     // MARK: - Computed Properties
 
@@ -205,6 +212,13 @@ class SettingsManager: ObservableObject {
             self.language = lang
         } else {
             self.language = .system
+        }
+
+        // windowAnimation defaults to true; only read if user has explicitly set it
+        if defaults.object(forKey: Keys.windowAnimation) != nil {
+            self.windowAnimation = defaults.bool(forKey: Keys.windowAnimation)
+        } else {
+            self.windowAnimation = Defaults.windowAnimation
         }
     }
 
