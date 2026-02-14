@@ -49,7 +49,7 @@ Unlike bloated Electron-based apps, GeminiNext is built entirely with native Swi
 
 ### 🖥️ Deep System Integration
 
-- **Global Hotkey** — Toggle the window with <kbd>Ctrl</kbd> + <kbd>&#96;</kbd> (customizable).
+- **Global Hotkey** — Toggle the window with <kbd>Ctrl</kbd> + <kbd>&#96;</kbd> (customizable or disableable).
 - **Launch at Login** — Start automatically when you log in.
 - **Persistent Session** — Secure cookie storage means you never need to log in again.
 
@@ -110,7 +110,7 @@ Select your target device in Xcode, then press `Cmd + R` to build and run.
 | Launch at Login    | Auto-start on login             | Off                            |
 | Always on Top      | Keep window in front            | Off                            |
 | Window Animation   | Fade transition on show/hide    | On                             |
-| Global Hotkey      | Toggle window shortcut          | <kbd>Ctrl</kbd> + <kbd>`</kbd> |
+| Show/Hide Window   | Toggle window shortcut          | <kbd>Ctrl</kbd> + <kbd>`</kbd> |
 | Language           | UI display language             | System                         |
 | User-Agent         | Custom browser identity         | Safari UA                      |
 | Auto Update Check  | Check for updates automatically | On                             |

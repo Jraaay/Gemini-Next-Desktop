@@ -68,11 +68,7 @@ struct SettingsView: View {
 
                 Toggle("Window Animation", isOn: $settings.windowAnimation)
 
-                Picker("Global Hotkey", selection: $settings.hotKeyPreset) {
-                    ForEach(HotKeyPreset.allCases) { preset in
-                        Text(preset.displayName).tag(preset)
-                    }
-                }
+                HotKeyRecorderView()
 
                 Picker("Language", selection: $settings.language) {
                     ForEach(AppLanguage.allCases) { lang in

@@ -31,7 +31,6 @@
         }
       }
     },
-
     "About" : {
       "localizations" : {
         "zh-Hans" : {
@@ -112,7 +111,16 @@
         }
       }
     },
-
+    "Clear" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清空"
+          }
+        }
+      }
+    },
     "Close Window" : {
       "localizations" : {
         "zh-Hans" : {
@@ -133,7 +141,6 @@
         }
       }
     },
-
     "Edit" : {
       "localizations" : {
         "zh-Hans" : {
@@ -164,12 +171,12 @@
         }
       }
     },
-    "Global Hotkey" : {
+    "Show/Hide Window" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "全局快捷键"
+            "value" : "显示/隐藏窗口"
           }
         }
       }
@@ -214,7 +221,6 @@
         }
       }
     },
-
     "Launch at Login" : {
       "localizations" : {
         "zh-Hans" : {
@@ -241,6 +247,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "永不"
+          }
+        }
+      }
+    },
+    "None" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无"
+          }
+        }
+      }
+    },
+    "Press a key combination…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按下组合键…"
+          }
+        }
+      }
+    },
+    "Record" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "录制"
           }
         }
       }
@@ -275,6 +311,16 @@
         }
       }
     },
+    "Stop" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "停止"
+          }
+        }
+      }
+    },
     "System Default" : {
       "localizations" : {
         "zh-Hans" : {
@@ -295,7 +341,6 @@
         }
       }
     },
-
     "User-Agent" : {
 
     },
@@ -328,8 +373,7 @@
           }
         }
       }
-    },
-
+    }
   },
   "version" : "1.0"
 }

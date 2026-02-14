@@ -25,13 +25,16 @@ class HotKeyManager {
     /// Register hotkey on initial launch
     func register() {
         installHandlerIfNeeded()
-        registerCurrentPreset()
+        registerCurrentHotKey()
     }
 
     /// Re-register hotkey (called when settings change)
-    func reRegister() {
+    /// - Parameter enabled: when false, only unregister without re-registering (recording mode)
+    func reRegister(enabled: Bool = true) {
         unregisterHotKey()
-        registerCurrentPreset()
+        if enabled {
+            registerCurrentHotKey()
+        }
     }
 
     // MARK: - Private Methods
@@ -51,13 +54,16 @@ class HotKeyManager {
     }
 
     /// Register hotkey based on current settings
-    private func registerCurrentPreset() {
-        let preset = SettingsManager.shared.hotKeyPreset
+    private func registerCurrentHotKey() {
+        guard let hotKey = SettingsManager.shared.customHotKey else {
+            print("Global hotkey disabled, skipping registration")
+            return
+        }
         let hotKeyID = EventHotKeyID(signature: OSType(0x53574654), id: 1)
         
         let regStatus = RegisterEventHotKey(
-            preset.keyCode,
-            preset.modifiers,
+            hotKey.keyCode,
+            hotKey.modifiers,
             hotKeyID,
             GetApplicationEventTarget(),
             0,
@@ -67,7 +73,7 @@ class HotKeyManager {
         if regStatus != noErr {
             print("Failed to register hotkey: \(regStatus)")
         } else {
-            print("Global hotkey \(preset.displayName) registered successfully")
+            print("Global hotkey \(hotKey.displayName) registered successfully")
         }
     }
 
