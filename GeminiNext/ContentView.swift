@@ -10,18 +10,29 @@ import SwiftUI
 struct ContentView: View {
     @ObservedObject var viewModel: WebViewModel
 
+    /// Tracks whether the initial page load has completed
+    @State private var hasFinishedInitialLoad: Bool = false
+
     var body: some View {
         ZStack {
             GeminiWebView(viewModel: viewModel)
                 .frame(minWidth: 800, minHeight: 600)
 
-            // Loading indicator (shown only when there is no error)
-            if viewModel.isLoading && viewModel.errorMessage == nil {
-                ProgressView("Loading Gemini...")
-                    .progressViewStyle(.circular)
-                    .padding(20)
-                    .background(Color(NSColor.windowBackgroundColor).opacity(0.8))
-                    .cornerRadius(10)
+            // Branded splash screen for initial load (no error)
+            if !hasFinishedInitialLoad && viewModel.errorMessage == nil {
+                SplashView(isLoading: !viewModel.isPageReady)
+                    .zIndex(1)
+            }
+
+            // Subtle top progress bar for subsequent navigations
+            if hasFinishedInitialLoad && viewModel.isLoading && viewModel.errorMessage == nil {
+                VStack {
+                    ProgressView()
+                        .progressViewStyle(.linear)
+                        .tint(Color(red: 0.35, green: 0.50, blue: 0.98))
+                    Spacer()
+                }
+                .transition(.opacity)
             }
 
             // Error message and retry
@@ -41,6 +52,15 @@ struct ContentView: View {
                 .padding(30)
                 .background(Color(NSColor.windowBackgroundColor).opacity(0.9))
                 .cornerRadius(12)
+            }
+        }
+        .onChange(of: viewModel.isPageReady) { _, newValue in
+            // Mark initial load as complete once the input field is detected
+            if newValue && !hasFinishedInitialLoad && viewModel.errorMessage == nil {
+                // Delay slightly to allow the SplashView fade-out animation to play
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    hasFinishedInitialLoad = true
+                }
             }
         }
     }

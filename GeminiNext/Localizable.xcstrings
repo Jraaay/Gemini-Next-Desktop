@@ -161,6 +161,16 @@
         }
       }
     },
+    "GeminiNext" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GeminiNext"
+          }
+        }
+      }
+    },
     "General" : {
       "localizations" : {
         "zh-Hans" : {
@@ -217,16 +227,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "登录时自动启动"
-          }
-        }
-      }
-    },
-    "Loading Gemini..." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正在加载 Gemini..."
           }
         }
       }

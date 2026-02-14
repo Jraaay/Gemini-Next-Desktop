@@ -42,11 +42,16 @@ class WebViewModel: NSObject, ObservableObject, WKNavigationDelegate, WKUIDelega
     @Published var canGoForward: Bool = false
     /// Loading error message; non-nil indicates an error occurred
     @Published var errorMessage: String?
+    /// Whether the page input field is ready (contenteditable or textarea detected)
+    @Published var isPageReady: Bool = false
 
     let webView: WKWebView
 
     /// Background timeout timer; navigates back to homepage on timeout
     private var backgroundTimer: Timer?
+
+    /// Timer that polls for input field readiness via JavaScript
+    private var inputReadyTimer: Timer?
 
     /// Check if currently on the Gemini homepage
     private var isOnHomePage: Bool {
@@ -101,6 +106,7 @@ class WebViewModel: NSObject, ObservableObject, WKNavigationDelegate, WKUIDelega
 
     deinit {
         backgroundTimer?.invalidate()
+        inputReadyTimer?.invalidate()
         NotificationCenter.default.removeObserver(self)
     }
 
@@ -166,12 +172,18 @@ class WebViewModel: NSObject, ObservableObject, WKNavigationDelegate, WKUIDelega
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
         isLoading = true
         errorMessage = nil
+        startInputReadyPolling()
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         isLoading = false
         canGoBack = webView.canGoBack
         canGoForward = webView.canGoForward
+        // Ensure page is marked ready when navigation fully completes
+        if !isPageReady {
+            isPageReady = true
+        }
+        stopInputReadyPolling()
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
@@ -191,6 +203,50 @@ class WebViewModel: NSObject, ObservableObject, WKNavigationDelegate, WKUIDelega
             errorMessage = String(localized: "Unable to connect to Gemini. Please check your network connection.")
         }
         isLoading = false
+    }
+
+    // MARK: - Input Ready Polling
+
+    /// Start polling for input field availability every 200ms, up to 30s
+    private func startInputReadyPolling() {
+        stopInputReadyPolling()
+        isPageReady = false
+        let startTime = Date()
+
+        inputReadyTimer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { [weak self] timer in
+            guard let self = self else { timer.invalidate(); return }
+
+            // Timeout after 30 seconds, fall back to didFinish
+            if Date().timeIntervalSince(startTime) > 30 {
+                timer.invalidate()
+                self.inputReadyTimer = nil
+                return
+            }
+
+            let js = """
+            (function() {
+                var el = document.querySelector('[contenteditable="true"]');
+                if (!el) el = document.querySelector('textarea');
+                return el !== null;
+            })();
+            """
+            self.webView.evaluateJavaScript(js) { result, _ in
+                if let ready = result as? Bool, ready {
+                    DispatchQueue.main.async {
+                        if !self.isPageReady {
+                            self.isPageReady = true
+                        }
+                        self.stopInputReadyPolling()
+                    }
+                }
+            }
+        }
+    }
+
+    /// Stop the input ready polling timer
+    private func stopInputReadyPolling() {
+        inputReadyTimer?.invalidate()
+        inputReadyTimer = nil
     }
 
     // MARK: - WKUIDelegate
