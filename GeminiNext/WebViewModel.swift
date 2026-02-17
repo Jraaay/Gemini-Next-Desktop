@@ -7,7 +7,20 @@ extension Notification.Name {
     static let browsingDataCleared = Notification.Name("BrowsingDataCleared")
 }
 
-class WebViewModel: NSObject, ObservableObject, WKNavigationDelegate, WKUIDelegate {
+/// Weak wrapper to avoid retain cycle: WKUserContentController strongly retains message handlers
+private class WeakScriptMessageHandler: NSObject, WKScriptMessageHandler {
+    weak var delegate: WKScriptMessageHandler?
+
+    init(_ delegate: WKScriptMessageHandler) {
+        self.delegate = delegate
+    }
+
+    func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
+        delegate?.userContentController(controller, didReceive: message)
+    }
+}
+
+class WebViewModel: NSObject, ObservableObject, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
 
     // MARK: - Constants
 
@@ -24,19 +37,140 @@ class WebViewModel: NSObject, ObservableObject, WKNavigationDelegate, WKUIDelega
     /// Shared process pool to ensure all WebView instances share the same session, avoiding cookie isolation
     private static let sharedProcessPool = WKProcessPool()
 
-    /// IME composition-end marker script, injected via WKUserScript for reliable timing
+    /// IME fix script — injected at document start to register before any page scripts.
+    /// Tracks real composing state and blocks buggy Enter events from reaching the page.
+    /// Console log bridge — forwards JS console.log to native Xcode console
+    private static let consoleLogBridgeScript = """
+    (function() {
+        if (window.__consoleBridgeInstalled) return;
+        window.__consoleBridgeInstalled = true;
+        var originalLog = console.log;
+        console.log = function() {
+            var args = Array.prototype.slice.call(arguments);
+            var msg = args.map(function(a) {
+                return typeof a === 'object' ? JSON.stringify(a) : String(a);
+            }).join(' ');
+            originalLog.apply(console, arguments);
+            try {
+                window.webkit.messageHandlers.consoleLog.postMessage(msg);
+            } catch(e) {}
+        };
+    })();
+    """
+
     private static let imeFixScript = """
     (function() {
         if (window.__imeFixInstalled) return;
         window.__imeFixInstalled = true;
-        window.__imeJustEnded = false;
 
-        document.addEventListener('compositionend', function() {
-            window.__imeJustEnded = true;
-            setTimeout(function() {
-                window.__imeJustEnded = false;
-            }, 500);
+        var actuallyComposing = false;
+        var fixInProgress = false;
+        var syntheticEnterInFlight = false;
+        var syntheticEnterTimer = null;
+
+        document.addEventListener('compositionstart', function(e) {
+            actuallyComposing = true;
+            console.log('[IME Debug] compositionstart, data="' + e.data + '"');
         }, true);
+
+        document.addEventListener('compositionend', function(e) {
+            actuallyComposing = false;
+            console.log('[IME Debug] compositionend, data="' + e.data + '"');
+
+            // FIX for Gemini's "recent composition" flag:
+            // Gemini internally tracks composition state and swallows the first
+            // Enter after compositionend. We dispatch a synthetic Enter to clear
+            // that flag, so the user's real Enter goes through normally.
+            //
+            // HOWEVER, if an Enter keydown arrives within 50ms of compositionend,
+            // it means the Enter key was used to confirm the IME candidate
+            // (scenario 1). In that case, we must NOT dispatch synthetic Enter,
+            // because Gemini's flag-clearing on that Enter is the correct behavior.
+            if (syntheticEnterTimer) clearTimeout(syntheticEnterTimer);
+            syntheticEnterTimer = setTimeout(function() {
+                syntheticEnterTimer = null;
+                var target = document.activeElement || document.body;
+                syntheticEnterInFlight = true;
+                console.log('[IME Debug] >>> dispatching synthetic Enter to clear Gemini flag');
+                var synDown = new KeyboardEvent('keydown', {
+                    key: 'Enter', code: 'Enter', keyCode: 13, which: 13,
+                    bubbles: true, cancelable: true
+                });
+                target.dispatchEvent(synDown);
+                var synUp = new KeyboardEvent('keyup', {
+                    key: 'Enter', code: 'Enter', keyCode: 13, which: 13,
+                    bubbles: true, cancelable: true
+                });
+                target.dispatchEvent(synUp);
+                syntheticEnterInFlight = false;
+                console.log('[IME Debug] >>> synthetic Enter dispatched, defaultPrevented=' + synDown.defaultPrevented);
+            }, 50);
+        }, true);
+
+        // Capture-phase keydown logging + fix
+        document.addEventListener('keydown', function(e) {
+            if (e.key !== 'Enter' || e.shiftKey) return;
+
+            // If a real Enter arrives right after compositionend (within 50ms),
+            // cancel the synthetic — this Enter IS the IME confirmation key
+            if (syntheticEnterTimer && e.isTrusted) {
+                clearTimeout(syntheticEnterTimer);
+                syntheticEnterTimer = null;
+                console.log('[IME Debug] keydown Enter: cancelled synthetic (IME confirmation Enter detected)');
+            }
+
+            // Block the synthetic Enter from our compositionend fix
+            // so it only reaches Gemini's handler (clears their flag)
+            // but doesn't trigger our own fix logic
+            if (syntheticEnterInFlight) {
+                console.log('[IME Debug] keydown Enter: SYNTHETIC (clearing Gemini flag)');
+                return;
+            }
+
+            console.log('[IME Debug] keydown Enter: isComposing=' + e.isComposing +
+                ', actuallyComposing=' + actuallyComposing +
+                ', fixInProgress=' + fixInProgress +
+                ', isTrusted=' + e.isTrusted);
+
+            // Original fix: WKWebView sometimes reports isComposing=true even
+            // after compositionend has fired. Block this buggy event and ask
+            // native to send a fresh Enter.
+            if (e.isComposing && !actuallyComposing && !fixInProgress) {
+                console.log('[IME Debug] >>> isComposing FIX: blocking buggy Enter, requesting native re-send');
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                fixInProgress = true;
+                setTimeout(function() { fixInProgress = false; }, 1000);
+                window.webkit.messageHandlers.imeEnterFix.postMessage('sendEnter');
+                return;
+            }
+
+            if (fixInProgress) {
+                console.log('[IME Debug] --- re-sent fix Enter, letting through');
+            } else {
+                console.log('[IME Debug] --- normal Enter, letting through');
+            }
+        }, true);
+
+        // Bubble-phase: check if page preventDefault'd
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !syntheticEnterInFlight) {
+                console.log('[IME Debug] keydown Enter (BUBBLE): defaultPrevented=' + e.defaultPrevented);
+            }
+        }, false);
+
+        // Post-Enter state check
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey && !syntheticEnterInFlight) {
+                setTimeout(function() {
+                    var el = document.activeElement;
+                    var textLen = el ? (el.textContent || '').length : 0;
+                    console.log('[IME Debug] post-Enter: textLen=' + textLen);
+                }, 50);
+            }
+        }, true);
+
+        console.log('[IME Debug] IME fix script installed with debug logging');
     })();
     """
 
@@ -74,10 +208,18 @@ class WebViewModel: NSObject, ObservableObject, WKNavigationDelegate, WKUIDelega
         configuration.processPool = Self.sharedProcessPool
         configuration.defaultWebpagePreferences.allowsContentJavaScript = true
 
+        // Inject console log bridge first so it captures all subsequent console.log calls
+        let consoleScript = WKUserScript(
+            source: Self.consoleLogBridgeScript,
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: false
+        )
+        configuration.userContentController.addUserScript(consoleScript)
+
         // Inject IME fix script via WKUserScript, more reliable than evaluateJavaScript
         let imeScript = WKUserScript(
             source: Self.imeFixScript,
-            injectionTime: .atDocumentEnd,
+            injectionTime: .atDocumentStart,
             forMainFrameOnly: false
         )
         configuration.userContentController.addUserScript(imeScript)
@@ -87,6 +229,11 @@ class WebViewModel: NSObject, ObservableObject, WKNavigationDelegate, WKUIDelega
         webView.customUserAgent = settings.userAgent
 
         super.init()
+
+        // Register message handlers (must be after super.init() so self is available)
+        let weakHandler = WeakScriptMessageHandler(self)
+        webView.configuration.userContentController.add(weakHandler, name: "imeEnterFix")
+        webView.configuration.userContentController.add(weakHandler, name: "consoleLog")
 
         webView.navigationDelegate = self
         webView.uiDelegate = self
@@ -118,6 +265,8 @@ class WebViewModel: NSObject, ObservableObject, WKNavigationDelegate, WKUIDelega
     deinit {
         backgroundTimer?.invalidate()
         inputReadyTimer?.invalidate()
+        webView.configuration.userContentController.removeScriptMessageHandler(forName: "imeEnterFix")
+        webView.configuration.userContentController.removeScriptMessageHandler(forName: "consoleLog")
         NotificationCenter.default.removeObserver(self)
     }
 
@@ -276,5 +425,47 @@ class WebViewModel: NSObject, ObservableObject, WKNavigationDelegate, WKUIDelega
             NSWorkspace.shared.open(url)
         }
         return nil
+    }
+
+    // MARK: - WKScriptMessageHandler (IME Enter Fix)
+
+    func userContentController(_ userContentController: WKUserContentController,
+                               didReceive message: WKScriptMessage) {
+        switch message.name {
+        case "consoleLog":
+            if let msg = message.body as? String {
+                print("[JS] \(msg)")
+            }
+        case "imeEnterFix":
+            print("[IME Debug] Native received imeEnterFix message: \(message.body)")
+            // Delay to allow WKWebView to clear its internal stale composing state
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+                print("[IME Debug] Native sending synthetic Enter key after 150ms delay")
+                self?.sendEnterKey()
+            }
+        default:
+            break
+        }
+    }
+
+    /// Send a fresh Enter key event via CGEvent.
+    /// By this point WKWebView's composing state should be cleared,
+    /// so the JS keydown event will have isComposing=false.
+    private func sendEnterKey() {
+        guard let window = webView.window else { return }
+        guard let source = CGEventSource(stateID: .combinedSessionState) else { return }
+
+        if let cgDown = CGEvent(keyboardEventSource: source, virtualKey: 0x24, keyDown: true) {
+            cgDown.flags = []
+            if let nsDown = NSEvent(cgEvent: cgDown) {
+                window.sendEvent(nsDown)
+            }
+        }
+        if let cgUp = CGEvent(keyboardEventSource: source, virtualKey: 0x24, keyDown: false) {
+            cgUp.flags = []
+            if let nsUp = NSEvent(cgEvent: cgUp) {
+                window.sendEvent(nsUp)
+            }
+        }
     }
 }
